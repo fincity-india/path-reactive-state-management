@@ -2,8 +2,8 @@ import { Subject } from 'rxjs';
 import * as objectPath from 'object-path';
 import uuid from './util/uuid';
 
-export const useStore = function () {
-  const store$ = {};
+export const useStore = function<Type extends Object>(init: Type) {
+  const store$ = init || {};
   const setStoreSubject$ = new Subject<{ path: string, value: any }>();
   const listeners = new Map<string, Subject<{ path: string, value: any }>>();
   const totalListenersList: Map<string, Array<string>> = new Map();
@@ -14,7 +14,7 @@ export const useStore = function () {
     listeners.get(path)!.next({ path, value });
   })
 
-  function setData(path: string, value: any) {
+  function setData<T>(path: string, value: T): void {
     objectPath.set(store$, path, value);
     if (listeners.has(path)) {
       setStoreSubject$.next({ path, value });
