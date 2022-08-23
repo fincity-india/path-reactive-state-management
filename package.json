@@ -1,50 +1,50 @@
 {
   "name": "@fincity/path-reactive-state-management",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "A simple mutation based state mangement, where you set and get data by paths and listen to changes on paths for actions",
   "keywords": [
     "Reactive",
     "state-management",
     "object-path"
   ],
+  "type": "module",
   "source": "src/index.ts",
   "context": "browser",
   "main": "dist/index.js",
-  "module": "dist/module.js",
   "types": "dist/types.d.ts",
   "files": [
     "/dist"
   ],
   "targets": {
     "main": {
-      "includeNodeModules": true,
-      "optimize": true
-    },
-    "module": {
-      "includeNodeModules": true,
-      "optimize": true
+      "optimize": true,
+      "includeNodeModules": ["rxjs"]
     }
   },
   "scripts": {
     "build": "parcel build",
     "test": "jest --watchAll",
-    "coverage": "jest --coverage"
+    "coverage": "jest --coverage",
+    "analyze": "parcel build --reporter @parcel/reporter-bundle-buddy"
   },
   "author": "Raja Avinash Alli",
   "license": "ISC",
   "dependencies": {
-    "@fincity/kirun-js": "1.0.3",
     "rxjs": "^7.5.6"
+  },
+  "peerDependencies": {
+    "@fincity/kirun-js": "^1.0.4"
   },
   "devDependencies": {
     "@parcel/packager-ts": "2.7.0",
+    "@parcel/reporter-bundle-buddy": "^2.7.0",
     "@parcel/transformer-typescript-types": "2.7.0",
     "@tsconfig/recommended": "^1.0.1",
-    "parcel": "^2.7.0",
-    "typescript": "^4.7.4",
     "@types/jest": "^28.1.4",
     "jest": "^28.1.2",
-    "ts-jest": "^28.0.5"
+    "parcel": "^2.7.0",
+    "ts-jest": "^28.0.5",
+    "typescript": "^4.7.4"
   },
   "jest": {
     "transform": {

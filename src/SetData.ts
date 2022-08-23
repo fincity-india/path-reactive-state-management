@@ -1,7 +1,6 @@
 import {
   Expression,
   ExpressionEvaluator,
-  ExpressionToken,
   ExpressionTokenValue,
   isNullValue,
   Operation,
