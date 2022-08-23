@@ -33,7 +33,7 @@
     "rxjs": "^7.5.6"
   },
   "peerDependencies": {
-    "@fincity/kirun-js": "1.0.3"
+    "@fincity/kirun-js": "^1.0.5"
   },
   "devDependencies": {
     "@parcel/packager-ts": "2.7.0",
