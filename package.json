@@ -33,7 +33,7 @@
   "author": "Raja Avinash Alli",
   "license": "ISC",
   "dependencies": {
-    "@fincity/kirun-js": "^1.0.1",
+    "@fincity/kirun-js": "^1.0.3",
     "rxjs": "^7.5.6"
   },
   "devDependencies": {
