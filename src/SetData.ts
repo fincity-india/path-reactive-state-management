@@ -24,24 +24,18 @@ export const setStoreData = (
   store: any,
   value: any,
   prefix: string,
-  tve?: TokenValueExtractor[]
+  extractionMap: Map<string, TokenValueExtractor>
 ) => {
   const expression = new Expression(path);
 
   const tokens = expression.getTokens();
   const tokenString = expression.getTokens().peekLast().getExpression();
   const pathPrefixDot = `${prefix}.`;
-  let tokenExtractors = (tve ?? []).map((e): [string, TokenValueExtractor] => [
-    e.getPrefix(),
-    e,
-  ]);
+
   if (!tokenString.startsWith(prefix)) {
     throw new StoreException(`Prefix - ${prefix} is not found`);
   }
-  const storeTokenValueExtractor = new Map([
-    ...tokenExtractors,
-    [pathPrefixDot, new StoreExtractor(store, pathPrefixDot)],
-  ]);
+
   for (let i = 0; i < tokens.size(); i++) {
     let ex = tokens.get(i);
     if (!(ex instanceof Expression)) continue;
@@ -49,9 +43,7 @@ export const setStoreData = (
       i,
       new ExpressionTokenValue(
         path,
-        new ExpressionEvaluator(ex as Expression).evaluate(
-          storeTokenValueExtractor
-        )
+        new ExpressionEvaluator(ex as Expression).evaluate(extractionMap)
       )
     );
   }

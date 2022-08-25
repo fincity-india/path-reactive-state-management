@@ -17,13 +17,21 @@ export const useStore = function <Type extends Object>(
   const setStoreSubject$ = new Subject<{ path: string; value: any }>();
   const listeners = new Map<string, Subject<{ path: string; value: any }>>();
   const totalListenersList: Map<string, Array<string>> = new Map();
+  const tokenExtractors = (tve ?? []).map(
+    (e): [string, TokenValueExtractor] => [e.getPrefix(), e]
+  );
+
+  const extractionMap = new Map<string, TokenValueExtractor>([
+    ...tokenExtractors,
+    [`${pathPrefix}.`, new StoreExtractor(store$, `${pathPrefix}.`)],
+  ]);
 
   setStoreSubject$.subscribe(({ path, value }) => {
     listeners.get(path)!.next({ path, value });
   });
 
   function setData<T>(path: string, value: T): void {
-    setStoreData(path, store$, value, pathPrefix, tve);
+    setStoreData(path, store$, value, pathPrefix, extractionMap);
     if (listeners.has(path)) {
       setStoreSubject$.next({ path, value });
     }
@@ -31,15 +39,8 @@ export const useStore = function <Type extends Object>(
 
   function getData(path: string) {
     let ev: ExpressionEvaluator = new ExpressionEvaluator(path);
-    let tokenExtractors = (tve ?? []).map(
-      (e): [string, TokenValueExtractor] => [e.getPrefix(), e]
-    );
-    return ev.evaluate(
-      new Map<string, TokenValueExtractor>([
-        ...tokenExtractors,
-        [`${pathPrefix}.`, new StoreExtractor(store$, `${pathPrefix}.`)],
-      ])
-    );
+
+    return ev.evaluate(extractionMap);
   }
 
   function addListener(
