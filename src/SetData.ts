@@ -4,6 +4,7 @@ import {
   ExpressionTokenValue,
   isNullValue,
   Operation,
+  TokenValueExtractor,
 } from "@fincity/kirun-js";
 import { StoreExtractor } from "./StoreExtractor";
 
@@ -22,17 +23,23 @@ export const setStoreData = (
   path: string,
   store: any,
   value: any,
-  prefix: string
+  prefix: string,
+  tve?: TokenValueExtractor[]
 ) => {
   const expression = new Expression(path);
 
   const tokens = expression.getTokens();
   const tokenString = expression.getTokens().peekLast().getExpression();
   const pathPrefixDot = `${prefix}.`;
+  let tokenExtractors = (tve ?? []).map((e): [string, TokenValueExtractor] => [
+    e.getPrefix(),
+    e,
+  ]);
   if (!tokenString.startsWith(prefix)) {
     throw new StoreException(`Prefix - ${prefix} is not found`);
   }
   const storeTokenValueExtractor = new Map([
+    ...tokenExtractors,
     [pathPrefixDot, new StoreExtractor(store, pathPrefixDot)],
   ]);
   for (let i = 0; i < tokens.size(); i++) {
