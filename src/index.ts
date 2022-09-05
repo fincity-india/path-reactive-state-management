@@ -82,3 +82,5 @@ export const useStore = function <Type extends Object>(
     store: store$,
   };
 };
+
+export * from "./SetData";
