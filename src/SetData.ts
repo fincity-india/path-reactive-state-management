@@ -8,7 +8,7 @@ import {
 } from "@fincity/kirun-js";
 import { StoreExtractor } from "./StoreExtractor";
 
-export class StoreException extends Error {
+class StoreException extends Error {
   private cause?: Error;
   constructor(message: string, err?: Error) {
     super(message);
@@ -24,18 +24,15 @@ export const setStoreData = (
   store: any,
   value: any,
   prefix: string,
-  extractionMap: Map<string, TokenValueExtractor>
+  extractionMap: Map<string, TokenValueExtractor>,
+  setData?: () => void
 ) => {
   const expression = new Expression(path);
-
   const tokens = expression.getTokens();
   const tokenString = expression.getTokens().peekLast().getExpression();
-  const pathPrefixDot = `${prefix}.`;
-
   if (!tokenString.startsWith(prefix)) {
     throw new StoreException(`Prefix - ${prefix} is not found`);
   }
-
   for (let i = 0; i < tokens.size(); i++) {
     let ex = tokens.get(i);
     if (!(ex instanceof Expression)) continue;
@@ -50,7 +47,6 @@ export const setStoreData = (
 
   tokens.removeLast();
   const ops = expression.getOperations();
-
   let el = store;
   let token = tokens.removeLast();
   let mem =
@@ -64,7 +60,6 @@ export const setStoreData = (
   }
 
   let op: Operation = ops.removeLast();
-
   while (!ops.isEmpty()) {
     if (op == Operation.OBJECT_OPERATOR) {
       el = getDataFromObject(el, mem, ops.peekLast());
@@ -79,7 +74,6 @@ export const setStoreData = (
         ? (token as ExpressionTokenValue).getElement()
         : token.getExpression();
   }
-
   if (op == Operation.OBJECT_OPERATOR) putDataInObject(el, mem, value);
   else putDataInArray(el, mem, value);
 };
