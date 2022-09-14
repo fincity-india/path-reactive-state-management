@@ -1,4 +1,4 @@
-import { Subject } from "rxjs";
+import { from, Subject } from "rxjs";
 import {
   Expression,
   ExpressionEvaluator,
@@ -84,3 +84,4 @@ export const useStore = function <Type extends Object>(
 };
 
 export * from "./SetData";
+export * from "./StoreExtractor";
