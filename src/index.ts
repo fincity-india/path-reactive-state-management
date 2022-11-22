@@ -37,9 +37,14 @@ export const useStore = function <Type extends Object>(
     }
   }
 
-  function getData(path: string) {
+  function getData(path: string, ...tve: Array<TokenValueExtractor>) {
     let ev: ExpressionEvaluator = new ExpressionEvaluator(path);
-
+    if (tve.length) {
+      const tokenExtractors = (tve ?? []).map(
+        (e): [string, TokenValueExtractor] => [e.getPrefix(), e]
+      );
+      return ev.evaluate(new Map([...extractionMap, ...tokenExtractors]));
+    }
     return ev.evaluate(extractionMap);
   }
 
