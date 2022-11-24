@@ -49,35 +49,42 @@ export const useStore = function <Type extends Object>(
   }
 
   function addListener(
-    path: string,
-    callback: (path: string, value: any) => void
+    callback: (path: string, value: any) => void,
+    ...path: Array<string>
   ) {
-    const key = uuid();
-    let subject: Subject<{ path: string; value: any }>;
-    if (listeners.has(path)) {
-      subject = listeners.get(path)!;
-    } else {
-      subject = new Subject();
-      listeners.set(path, subject);
-    }
-    totalListenersList.set(path, [
-      ...(totalListenersList.get(path) || []),
-      key,
-    ]);
-    const subscription = subject.subscribe(({ path, value }) =>
-      callback(path, value)
-    );
-    return () => {
-      subscription.unsubscribe();
-      totalListenersList.set(
-        path,
-        (totalListenersList.get(path) || []).filter((e) => e !== key)
-      );
-      if (!totalListenersList.get(path)?.length && listeners.get(path)) {
-        listeners.get(path)!.complete();
-        listeners.delete(path);
+    const subs = new Array<Function>();
+    for (let i = 0; i < path.length; i++) {
+      const key = uuid();
+      let subject: Subject<{ path: string; value: any }>;
+      if (listeners.has(path[i])) {
+        subject = listeners.get(path[i])!;
+      } else {
+        subject = new Subject();
+        listeners.set(path[i], subject);
       }
-    };
+      totalListenersList.set(path[i], [
+        ...(totalListenersList.get(path[i]) || []),
+        key,
+      ]);
+      const subscription = subject.subscribe(({ path, value }) =>
+        callback(path, value)
+      );
+      subs.push(() => {
+        subscription.unsubscribe();
+        totalListenersList.set(
+          path[i],
+          (totalListenersList.get(path[i]) || []).filter((e) => e !== key)
+        );
+        if (
+          !totalListenersList.get(path[i])?.length &&
+          listeners.get(path[i])
+        ) {
+          listeners.get(path[i])!.complete();
+          listeners.delete(path[i]);
+        }
+      });
+    }
+    return () => subs.forEach((e) => e());
   }
 
   return {
