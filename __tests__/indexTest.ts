@@ -36,7 +36,7 @@ describe("Reactive-management-tests", () => {
       { a: { b: 10, c: ["a", 2, { d: "Hello" }] } },
       "Bamboo"
     );
-    const unsubscribe = addListener("Bamboo.a.c[2].d", mockCallback);
+    const unsubscribe = addListener(mockCallback, "Bamboo.a.c[2].d");
     setData("Bamboo.a.c[2].d", "Hello World");
     setData("Bamboo.a.c[2].d", "Hello World!");
     expect(mockCallback.mock.calls.length).toBe(2);
