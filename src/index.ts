@@ -15,7 +15,10 @@ export const useStore = function <Type extends Object>(
 ) {
   const store$ = init || {};
   const setStoreSubject$ = new Subject<{ path: string; value: any }>();
-  const listeners = new Map<string, Subject<{ path: string; value: any }>>();
+  const listeners = new Map<
+    string,
+    Subject<{ path: string; value: any; set: Set<any> }>
+  >();
   const totalListenersList: Map<string, Array<string>> = new Map();
   const tokenExtractors = (tve ?? []).map(
     (e): [string, TokenValueExtractor] => [e.getPrefix(), e]
@@ -26,15 +29,21 @@ export const useStore = function <Type extends Object>(
     [`${pathPrefix}.`, new StoreExtractor(store$, `${pathPrefix}.`)],
   ]);
 
-  setStoreSubject$.subscribe(({ path, value }) => {
-    listeners.get(path)!.next({ path, value });
+  setStoreSubject$.subscribe(({ path }) => {
+    const set = new Set();
+    Array.from(listeners.entries())
+      .filter(
+        ([p]) =>
+          path == p || p.startsWith(path + ".") || p.startsWith(path + "[")
+      )
+      .forEach(([p, sub]) =>
+        sub.next({ path: p, value: getData(p, ...tve), set })
+      );
   });
 
   function setData<T>(path: string, value: T): void {
     setStoreData(path, store$, value, pathPrefix, extractionMap);
-    if (listeners.has(path)) {
-      setStoreSubject$.next({ path, value });
-    }
+    setStoreSubject$.next({ path, value });
   }
 
   function getData(path: string, ...tve: Array<TokenValueExtractor>) {
@@ -55,7 +64,7 @@ export const useStore = function <Type extends Object>(
     const subs = new Array<Function>();
     for (let i = 0; i < path.length; i++) {
       const key = uuid();
-      let subject: Subject<{ path: string; value: any }>;
+      let subject: Subject<{ path: string; value: any; set: Set<any> }>;
       if (listeners.has(path[i])) {
         subject = listeners.get(path[i])!;
       } else {
@@ -66,9 +75,11 @@ export const useStore = function <Type extends Object>(
         ...(totalListenersList.get(path[i]) || []),
         key,
       ]);
-      const subscription = subject.subscribe(({ path, value }) =>
-        callback(path, value)
-      );
+      const subscription = subject.subscribe(({ path, value, set }) => {
+        if (set.has(callback)) return;
+        set.add(callback);
+        callback(path, value);
+      });
       subs.push(() => {
         subscription.unsubscribe();
         totalListenersList.set(

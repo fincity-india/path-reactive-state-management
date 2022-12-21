@@ -1,6 +1,6 @@
 {
   "name": "@fincity/path-reactive-state-management",
-  "version": "1.4.5",
+  "version": "1.4.6",
   "description": "A simple mutation based state mangement, where you set and get data by paths and listen to changes on paths for actions",
   "keywords": [
     "Reactive",
