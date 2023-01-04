@@ -56,8 +56,15 @@ export const useStore = function <Type extends Object>(
     }
     return ev.evaluate(extractionMap);
   }
-
   function addListener(
+    callback: (path: string, value: any) => void,
+    ...path: Array<string>
+  ) {
+    return addListenerAndCallImmediately(false, callback, ...path);
+  }
+
+  function addListenerAndCallImmediately(
+    callImmedieately: boolean,
     callback: (path: string, value: any) => void,
     ...path: Array<string>
   ) {
@@ -80,6 +87,12 @@ export const useStore = function <Type extends Object>(
         set.add(callback);
         callback(path, value);
       });
+      if (callImmedieately)
+        subject.next({
+          path: path[i],
+          value: getData(path[i], ...tve),
+          set: new Set(),
+        });
       subs.push(() => {
         subscription.unsubscribe();
         totalListenersList.set(
@@ -102,6 +115,7 @@ export const useStore = function <Type extends Object>(
     setData,
     getData,
     addListener,
+    addListenerAndCallImmediately,
     store: store$,
   };
 };
