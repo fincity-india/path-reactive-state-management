@@ -41,8 +41,12 @@ export const useStore = function <Type extends Object>(
       );
   });
 
-  function setData<T>(path: string, value: T): void {
-    setStoreData(path, store$, value, pathPrefix, extractionMap);
+  function setData<T>(
+    path: string,
+    value: T,
+    deleteKey: boolean = false
+  ): void {
+    setStoreData(path, store$, value, pathPrefix, extractionMap, deleteKey);
     setStoreSubject$.next({ path, value });
   }
 
