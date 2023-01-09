@@ -25,7 +25,7 @@ export const setStoreData = (
   value: any,
   prefix: string,
   extractionMap: Map<string, TokenValueExtractor>,
-  deleteKey: boolean
+  deleteKey?: boolean
 ) => {
   const expression = new Expression(path);
   const tokens = expression.getTokens();
@@ -128,7 +128,7 @@ function putDataInObject(
   el: any,
   mem: string,
   value: any,
-  deleteKey: boolean
+  deleteKey?: boolean
 ): void {
   if (Array.isArray(el) || typeof el !== "object")
     throw new StoreException(`Expected an object but found  ${el}`);

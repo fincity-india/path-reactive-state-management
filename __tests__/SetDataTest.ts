@@ -8,13 +8,13 @@ describe("setdata tests", () => {
 
     const map = new Map([["Store.", new StoreExtractor(store, `Store.`)]]);
 
-    setStoreData("Store.a", store, 20, "Store", map);
+    setStoreData("Store.a", store, 20, "Store", map, undefined);
     expect(store.a).toBe(20);
 
-    setStoreData("Store.x.y[0]", store, 20, "Store", map);
+    setStoreData("Store.x.y[0]", store, 20, "Store", map, undefined);
     expect(store.x.y[0]).toBe(20);
 
-    setStoreData("Store.z[Store.x.y[0]]", store, 300, "Store", map);
+    setStoreData("Store.z[Store.x.y[0]]", store, 300, "Store", map, undefined);
     expect(store.z[20]).toBe(300);
   });
 
@@ -54,5 +54,27 @@ describe("setdata tests", () => {
     setData("Bamboo.x", { a: 15, b: 35, c: 40 });
     expect(mockCallback1.mock.calls.length).toBe(1);
     unsubscribe1();
+  });
+
+  test("setData - Delete key", () => {
+    let store: any = {};
+
+    const map = new Map([["Store.", new StoreExtractor(store, `Store.`)]]);
+
+    setStoreData("Store.x.y", store, 20, "Store", map, undefined);
+    expect(store.x.y).toBe(20);
+
+    setStoreData("Store.x.z", store, "hello", "Store", map, undefined);
+    expect(store.x.z).toBe("hello");
+
+    setStoreData("Store.x.h", store, "hello", "Store", map, undefined);
+    expect(store.x.h).toBe("hello");
+
+    setStoreData("Store.x.y", store, undefined, "Store", map, true);
+    expect(store.x.y).toBe(undefined);
+    setStoreData("Store.x.z", store, "hello world", "Store", map, true);
+    expect(store.x.z).toBe("hello world");
+    setStoreData("Store.x.h", store, null, "Store", map, true);
+    expect(store.x.h).toBe(undefined);
   });
 });
