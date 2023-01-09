@@ -50,6 +50,30 @@ describe("Reactive-management-tests", () => {
     expect(mockCallback.mock.calls.length).toBe(2);
   });
 
+  test("Add path listener with call immediately", () => {
+    const mockCallback = jest.fn().mockImplementation(() => {});
+    const { setData, addListenerAndCallImmediately } = useStore(
+      { a: { b: 10, c: ["a", 2, { d: "Hello" }] } },
+      "Bamboo"
+    );
+    const unsubscribe = addListenerAndCallImmediately(
+      true,
+      mockCallback,
+      "Bamboo.a.c[2].d"
+    );
+    setData("Bamboo.a.c[2].d", "Hello World");
+    setData("Bamboo.a.c[2].d", "Hello World!");
+    expect(mockCallback.mock.calls.length).toBe(3);
+    expect([
+      mockCallback.mock.calls[0][0],
+      mockCallback.mock.calls[0][1],
+    ]).toEqual(["Bamboo.a.c[2].d", "Hello"]);
+    unsubscribe();
+    setData("Bamboo.a.c[2].d", "Hello World");
+    //If the subscription was not unsubscribed it would've been 3
+    expect(mockCallback.mock.calls.length).toBe(3);
+  });
+
   test("Extra token extractor", () => {
     const { store } = useStore(
       { a: { b: 1, c: ["a", 2, { d: "Hello" }] } },

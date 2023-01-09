@@ -25,7 +25,7 @@ export const setStoreData = (
   value: any,
   prefix: string,
   extractionMap: Map<string, TokenValueExtractor>,
-  setData?: () => void
+  deleteKey: boolean
 ) => {
   const expression = new Expression(path);
   const tokens = expression.getTokens();
@@ -74,7 +74,8 @@ export const setStoreData = (
         ? (token as ExpressionTokenValue).getElement()
         : token.getExpression();
   }
-  if (op == Operation.OBJECT_OPERATOR) putDataInObject(el, mem, value);
+  if (op == Operation.OBJECT_OPERATOR)
+    putDataInObject(el, mem, value, deleteKey);
   else putDataInArray(el, mem, value);
 };
 
@@ -123,9 +124,19 @@ function putDataInArray(el: any, mem: string, value: any): void {
   el[index] = value;
 }
 
-function putDataInObject(el: any, mem: string, value: any): void {
+function putDataInObject(
+  el: any,
+  mem: string,
+  value: any,
+  deleteKey: boolean
+): void {
   if (Array.isArray(el) || typeof el !== "object")
     throw new StoreException(`Expected an object but found  ${el}`);
+
+  if (deleteKey && (value === null || value === undefined)) {
+    delete el[mem];
+    return;
+  }
 
   el[mem] = value;
 }
