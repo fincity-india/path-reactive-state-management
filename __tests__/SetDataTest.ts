@@ -71,10 +71,10 @@ describe("setdata tests", () => {
     expect(store.x.h).toBe("hello");
 
     setStoreData("Store.x.y", store, undefined, "Store", map, true);
-    expect(store.x.y).toBe(undefined);
+    expect(Object.keys(store.x)).toStrictEqual(["z", "h"]);
     setStoreData("Store.x.z", store, "hello world", "Store", map, true);
-    expect(store.x.z).toBe("hello world");
+    expect(Object.keys(store.x)).toStrictEqual(["z", "h"]);
     setStoreData("Store.x.h", store, null, "Store", map, true);
-    expect(store.x.h).toBe(undefined);
+    expect(Object.keys(store.x)).toStrictEqual(["z"]);
   });
 });
