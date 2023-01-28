@@ -32,13 +32,25 @@ export const useStore = function <Type extends Object>(
   setStoreSubject$.subscribe(({ path }) => {
     const set = new Set();
     Array.from(listeners.entries())
-      .filter(
-        ([p]) =>
-          path == p || p.startsWith(path + ".") || p.startsWith(path + "[")
-      )
-      .forEach(([p, sub]) =>
-        sub.next({ path: p, value: getData(p, ...tve), set })
-      );
+      .filter(([p]) => {
+        const chkParents = p[0] === "*";
+        const chkPath = chkParents ? p.substring(1) : p;
+        if (
+          path == chkPath ||
+          chkPath.startsWith(path + ".") ||
+          chkPath.startsWith(path + "[")
+        )
+          return true;
+
+        return (
+          chkParents &&
+          (path.startsWith(`${chkPath}.`) || path.startsWith(`${chkPath}[`))
+        );
+      })
+      .forEach(([p, sub]) => {
+        const actualPath = p[0] === "*" ? p.substring(1) : p;
+        sub.next({ path: actualPath, value: getData(actualPath, ...tve), set });
+      });
   });
 
   function setData<T>(
@@ -60,6 +72,7 @@ export const useStore = function <Type extends Object>(
     }
     return ev.evaluate(extractionMap);
   }
+
   function addListener(
     callback: (path: string, value: any) => void,
     ...path: Array<string>
@@ -72,18 +85,52 @@ export const useStore = function <Type extends Object>(
     callback: (path: string, value: any) => void,
     ...path: Array<string>
   ) {
+    return addListenerWithAllOptions(
+      callImmedieately,
+      false,
+      callback,
+      ...path
+    );
+  }
+
+  function addListenerWithChildrenActivity(
+    callback: (path: string, value: any) => void,
+    ...path: Array<string>
+  ) {
+    return addListenerAndCallImmediatelyWithChildrenActivity(
+      false,
+      callback,
+      ...path
+    );
+  }
+
+  function addListenerAndCallImmediatelyWithChildrenActivity(
+    callImmedieately: boolean,
+    callback: (path: string, value: any) => void,
+    ...path: Array<string>
+  ) {
+    return addListenerWithAllOptions(callImmedieately, true, callback, ...path);
+  }
+
+  function addListenerWithAllOptions(
+    callImmedieately: boolean,
+    callForAllChildrenActivity: boolean,
+    callback: (path: string, value: any) => void,
+    ...path: Array<string>
+  ) {
     const subs = new Array<Function>();
     for (let i = 0; i < path.length; i++) {
       const key = uuid();
       let subject: Subject<{ path: string; value: any; set: Set<any> }>;
-      if (listeners.has(path[i])) {
-        subject = listeners.get(path[i])!;
+      const curPath = callForAllChildrenActivity ? "*" + path[i] : path[i];
+      if (listeners.has(curPath)) {
+        subject = listeners.get(curPath)!;
       } else {
         subject = new Subject();
-        listeners.set(path[i], subject);
+        listeners.set(curPath, subject);
       }
-      totalListenersList.set(path[i], [
-        ...(totalListenersList.get(path[i]) || []),
+      totalListenersList.set(curPath, [
+        ...(totalListenersList.get(curPath) || []),
         key,
       ]);
       const subscription = subject.subscribe(({ path, value, set }) => {
@@ -93,22 +140,22 @@ export const useStore = function <Type extends Object>(
       });
       if (callImmedieately)
         subject.next({
-          path: path[i],
-          value: getData(path[i], ...tve),
+          path: curPath,
+          value: getData(curPath, ...tve),
           set: new Set(),
         });
       subs.push(() => {
         subscription.unsubscribe();
         totalListenersList.set(
-          path[i],
-          (totalListenersList.get(path[i]) || []).filter((e) => e !== key)
+          curPath,
+          (totalListenersList.get(curPath) || []).filter((e) => e !== key)
         );
         if (
-          !totalListenersList.get(path[i])?.length &&
-          listeners.get(path[i])
+          !totalListenersList.get(curPath)?.length &&
+          listeners.get(curPath)
         ) {
-          listeners.get(path[i])!.complete();
-          listeners.delete(path[i]);
+          listeners.get(curPath)!.complete();
+          listeners.delete(curPath);
         }
       });
     }
@@ -120,6 +167,8 @@ export const useStore = function <Type extends Object>(
     getData,
     addListener,
     addListenerAndCallImmediately,
+    addListenerWithChildrenActivity,
+    addListenerAndCallImmediatelyWithChildrenActivity,
     store: store$,
   };
 };
