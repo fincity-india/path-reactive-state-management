@@ -27,4 +27,20 @@ describe("Parent path listener tests...", () => {
     setData("Bamboo.x", { a: 25, b: 45, c: 50 });
     expect(mockCallback1.mock.calls.length).toBe(3);
   });
+
+  test("Store validation triggers test", () => {
+    const mockCallback1 = jest.fn().mockImplementation(() => {});
+    const { setData, addListenerWithChildrenActivity } = useStore(
+      { validationTriggers: {} },
+      "Store"
+    );
+    const pageName = "textBox";
+    const unsubscribe1 = addListenerWithChildrenActivity(
+      mockCallback1,
+      `Store.validationTriggers.${pageName}`
+    );
+    setData("Store.validationTriggers.textBox.123123123123", true);
+    expect(mockCallback1.mock.calls.length).toBe(1);
+    console.log(mockCallback1.mock.calls[0]);
+  });
 });
