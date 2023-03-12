@@ -141,7 +141,10 @@ export const useStore = function <Type extends Object>(
       if (callImmedieately)
         subject.next({
           path: curPath,
-          value: getData(curPath, ...tve),
+          value: getData(
+            curPath[0] === "*" ? curPath.substring(1) : curPath,
+            ...tve
+          ),
           set: new Set(),
         });
       subs.push(() => {

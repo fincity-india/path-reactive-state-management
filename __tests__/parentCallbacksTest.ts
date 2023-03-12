@@ -28,7 +28,7 @@ describe("Parent path listener tests...", () => {
     expect(mockCallback1.mock.calls.length).toBe(3);
   });
 
-  test("Store validation triggers test", () => {
+  test("Store validation triggers test without immediate", () => {
     const mockCallback1 = jest.fn().mockImplementation(() => {});
     const { setData, addListenerWithChildrenActivity } = useStore(
       { validationTriggers: {} },
@@ -41,6 +41,21 @@ describe("Parent path listener tests...", () => {
     );
     setData("Store.validationTriggers.textBox.123123123123", true);
     expect(mockCallback1.mock.calls.length).toBe(1);
+    console.log(mockCallback1.mock.calls[0]);
+  });
+
+  test("Store validation triggers test with immediate", () => {
+    const mockCallback1 = jest.fn().mockImplementation(() => {});
+    const { setData, addListenerAndCallImmediatelyWithChildrenActivity } =
+      useStore({ validationTriggers: {} }, "Store");
+    const pageName = "textBox";
+    const unsubscribe1 = addListenerAndCallImmediatelyWithChildrenActivity(
+      true,
+      mockCallback1,
+      `Store.validationTriggers.${pageName}`
+    );
+    setData("Store.validationTriggers.textBox.123123123123", true);
+    expect(mockCallback1.mock.calls.length).toBe(2);
     console.log(mockCallback1.mock.calls[0]);
   });
 });
