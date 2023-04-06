@@ -56,6 +56,24 @@ describe("setdata tests", () => {
     unsubscribe1();
   });
 
+  test("listener when path is undefined", () => {
+    const mockCallback1 = jest.fn().mockImplementation(() => {});
+    const { setData, addListenerAndCallImmediately } = useStore(
+      { a: { b: 10, c: ["a", 2, { d: "Hello" }] }, x: { a: 10, b: 20, c: 30 } },
+      "Bamboo"
+    );
+    const path = undefined;
+    const unsubscribe1 = addListenerAndCallImmediately(
+      true,
+      mockCallback1,
+      "Bamboo.x.a",
+      path as unknown as string
+    );
+    setData("Bamboo.x", { a: 15, b: 35, c: 40 });
+    expect(mockCallback1.mock.calls.length).toBe(2);
+    unsubscribe1();
+  });
+
   test("setData - Delete key", () => {
     let store: any = {};
 

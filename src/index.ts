@@ -2,6 +2,7 @@ import { from, Subject } from "rxjs";
 import {
   Expression,
   ExpressionEvaluator,
+  isNullValue,
   TokenValueExtractor,
 } from "@fincity/kirun-js";
 import uuid from "./util/uuid";
@@ -120,6 +121,7 @@ export const useStore = function <Type extends Object>(
   ) {
     const subs = new Array<Function>();
     for (let i = 0; i < path.length; i++) {
+      if (isNullValue(path[i])) continue;
       const key = uuid();
       let subject: Subject<{ path: string; value: any; set: Set<any> }>;
       const curPath = callForAllChildrenActivity ? "*" + path[i] : path[i];
