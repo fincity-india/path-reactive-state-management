@@ -95,4 +95,13 @@ describe("setdata tests", () => {
     setStoreData("Store.x.h", store, null, "Store", map, true);
     expect(Object.keys(store.x)).toStrictEqual(["z"]);
   });
+
+  test("setData - False value", () => {
+    let store: any = {};
+
+    const map = new Map([["Store.", new StoreExtractor(store, `Store.`)]]);
+
+    setStoreData("Store.x.y", store, false, "Store", map, undefined);
+    expect(store.x.y).toStrictEqual(false);
+  });
 });
