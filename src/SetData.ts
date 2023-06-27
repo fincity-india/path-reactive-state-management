@@ -9,7 +9,7 @@ import {
 import { StoreExtractor } from "./StoreExtractor";
 
 class StoreException extends Error {
-  private cause?: Error;
+  cause?: Error;
   constructor(message: string, err?: Error) {
     super(message);
     this.cause = err;
